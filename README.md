@@ -83,7 +83,9 @@ def add_model(message, product_id, product_name):
     bot.reply_to(message, "Введите состояние товара:")
     current_action = 'add_status'
     bot.register_next_step_handler(message, lambda m: finalize_addition(m, product_id, product_name, product_model))
-
+    
+# Запуск бота
+bot.polling()
 def finalize_addition(message, product_id, product_name, product_model):
     product_status = message.text
     products[product_id] = {'name': product_name, 'model': product_model, 'status': product_status}
