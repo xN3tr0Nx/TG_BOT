@@ -44,3 +44,47 @@ def update_product(message):
     global current_action
     current_action = 'update'
     bot.reply_to(message, "Введите ID товара для обновления состояния:")
+@bot.message_handler(func=lambda message: current_action == 'update')
+def get_new_state(message):
+    product_id = message.text
+    if product_id in products:
+        bot.reply_to(message, "Введите новое состояние:")
+        current_action = 'update_state'
+        bot.register_next_step_handler(message, lambda m: update_state(m, product_id))
+    else:
+        bot.reply_to(message, "Товар с таким ID не найден.")
+
+def update_state(message, product_id):
+    new_state = message.text
+    products[product_id]['status'] = new_state
+    bot.reply_to(message, "Данные обновлены.")
+
+@bot.message_handler(commands=['add'])
+def add_product(message):
+    global current_action
+    current_action = 'add'
+    bot.reply_to(message, "Введите название нового товара:")
+
+@bot.message_handler(func=lambda message: current_action == 'add')
+def enter_product_details(message):
+    product_name = message.text
+    bot.reply_to(message, "Введите ID товара:")
+    current_action = 'add_id'
+    bot.register_next_step_handler(message, lambda m: add_id(m, product_name))
+
+def add_id(message, product_name):
+    product_id = message.text
+    bot.reply_to(message, "Введите модель товара:")
+    current_action = 'add_model'
+    bot.register_next_step_handler(message, lambda m: add_model(m, product_id, product_name))
+
+def add_model(message, product_id, product_name):
+    product_model = message.text
+    bot.reply_to(message, "Введите состояние товара:")
+    current_action = 'add_status'
+    bot.register_next_step_handler(message, lambda m: finalize_addition(m, product_id, product_name, product_model))
+
+def finalize_addition(message, product_id, product_name, product_model):
+    product_status = message.text
+    products[product_id] = {'name': product_name, 'model': product_model, 'status': product_status}
+    bot.reply_to(message, f"Товар '{product_name}' успешно добавлен.\nСписок товаров: {products}")
